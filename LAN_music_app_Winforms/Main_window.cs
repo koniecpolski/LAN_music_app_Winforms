@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace LAN_music_app_Winforms
 {
-    public partial class Form1 : Form
+    public partial class Main_window : Form
     {
-        public Form1()
+        public Main_window()
         {
             InitializeComponent();
         }
