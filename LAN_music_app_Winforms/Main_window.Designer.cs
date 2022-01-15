@@ -43,6 +43,8 @@ namespace LAN_music_app_Winforms
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.list_playlist = new System.Windows.Forms.ListBox();
             this.vlcControl1 = new Vlc.DotNet.Forms.VlcControl();
+            this.text_played = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.panel_left.SuspendLayout();
             this.panel_main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.vlcControl1)).BeginInit();
@@ -116,6 +118,8 @@ namespace LAN_music_app_Winforms
             // panel_main
             // 
             this.panel_main.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.panel_main.Controls.Add(this.label3);
+            this.panel_main.Controls.Add(this.text_played);
             this.panel_main.Controls.Add(this.vlcControl1);
             this.panel_main.Controls.Add(this.label2);
             this.panel_main.Controls.Add(this.button_set);
@@ -164,23 +168,45 @@ namespace LAN_music_app_Winforms
             // 
             // list_playlist
             // 
+            this.list_playlist.AllowDrop = true;
             this.list_playlist.FormattingEnabled = true;
             this.list_playlist.Location = new System.Drawing.Point(33, 255);
             this.list_playlist.Name = "list_playlist";
             this.list_playlist.Size = new System.Drawing.Size(321, 95);
             this.list_playlist.TabIndex = 1;
+            this.list_playlist.DragDrop += new System.Windows.Forms.DragEventHandler(this.list_playlist_DragDrop);
+            this.list_playlist.DragEnter += new System.Windows.Forms.DragEventHandler(this.list_playlist_DragEnter);
+            this.list_playlist.DoubleClick += new System.EventHandler(this.list_playlist_DoubleClick);
             // 
             // vlcControl1
             // 
             this.vlcControl1.BackColor = System.Drawing.Color.Black;
-            this.vlcControl1.Location = new System.Drawing.Point(33, 25);
+            this.vlcControl1.Location = new System.Drawing.Point(372, 12);
             this.vlcControl1.Name = "vlcControl1";
-            this.vlcControl1.Size = new System.Drawing.Size(321, 156);
+            this.vlcControl1.Size = new System.Drawing.Size(5, 5);
             this.vlcControl1.Spu = -1;
             this.vlcControl1.TabIndex = 6;
             this.vlcControl1.Text = "vlcControl1";
+            this.vlcControl1.Visible = false;
             this.vlcControl1.VlcLibDirectory = ((System.IO.DirectoryInfo)(resources.GetObject("vlcControl1.VlcLibDirectory")));
             this.vlcControl1.VlcMediaplayerOptions = null;
+            // 
+            // text_played
+            // 
+            this.text_played.Location = new System.Drawing.Point(33, 45);
+            this.text_played.Name = "text_played";
+            this.text_played.ReadOnly = true;
+            this.text_played.Size = new System.Drawing.Size(214, 20);
+            this.text_played.TabIndex = 7;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(33, 26);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(95, 13);
+            this.label3.TabIndex = 8;
+            this.label3.Text = "Odtwarzany utwór:";
             // 
             // Main_window
             // 
@@ -216,6 +242,8 @@ namespace LAN_music_app_Winforms
         private System.Windows.Forms.Button button_set;
         private System.Windows.Forms.TextBox textBox_czas;
         private Vlc.DotNet.Forms.VlcControl vlcControl1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox text_played;
     }
 }
 
