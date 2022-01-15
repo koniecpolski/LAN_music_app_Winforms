@@ -17,6 +17,7 @@ namespace LAN_music_app_Winforms
     {
         private int? odtwarzany = null; // nullable integer
         //private bool next = false;
+        delegate void StringParameterDelegate(string value);
 
         public Main_window()
         {
@@ -97,6 +98,8 @@ namespace LAN_music_app_Winforms
             if (this.InvokeRequired)
             {
                 Invoke((Action)delegate { Play(path); });
+                //BeginInvoke(new StringParameterDelegate(Play), new object[] { path });
+                return;
             }
             else
             {
