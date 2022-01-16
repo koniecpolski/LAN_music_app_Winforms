@@ -97,6 +97,7 @@ namespace LAN_music_app_Winforms
             this.button_start_server.TabIndex = 0;
             this.button_start_server.Text = "URUCHOM\r\nSERWER";
             this.button_start_server.UseVisualStyleBackColor = true;
+            this.button_start_server.Click += new System.EventHandler(this.button_start_server_Click);
             // 
             // button_next
             // 
@@ -225,8 +226,6 @@ namespace LAN_music_app_Winforms
             this.vlcControl1.Visible = false;
             this.vlcControl1.VlcLibDirectory = ((System.IO.DirectoryInfo)(resources.GetObject("vlcControl1.VlcLibDirectory")));
             this.vlcControl1.VlcMediaplayerOptions = null;
-            this.vlcControl1.EndReached += new System.EventHandler<Vlc.DotNet.Core.VlcMediaPlayerEndReachedEventArgs>(this.vlcControl1_EndReached);
-            this.vlcControl1.Stopped += new System.EventHandler<Vlc.DotNet.Core.VlcMediaPlayerStoppedEventArgs>(this.vlcControl1_Stopped);
             // 
             // label2
             // 

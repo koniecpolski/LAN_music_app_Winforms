@@ -7,7 +7,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
+using System.Net.Sockets;
+using System.Net;
+using System.Collections;
 
 // https://github.com/ZeBobo5/Vlc.DotNet/wiki/Getting-started
 
@@ -15,14 +19,16 @@ namespace LAN_music_app_Winforms
 {
     public partial class Main_window : Form
     {
-        private int? odtwarzany = null; // nullable integer
-        //private bool next = false;
-        delegate void StringParameterDelegate(string value);
+        public int? odtwarzany = null; // nullable integer
+        public bool serwer_aktywny = false;
+        public static Hashtable clientsList = new Hashtable();
 
         public Main_window()
         {
             InitializeComponent();
         }
+
+        #region Obsługa muzyki
 
         private void vlc_Play(FileInfo plik = null)
         {
@@ -58,6 +64,8 @@ namespace LAN_music_app_Winforms
             }
             else
             {
+                if (serwer_aktywny)
+                    broadcast("stop", "0", "null", true);
                 vlcControl1.Stop();
             }
         }
@@ -70,7 +78,23 @@ namespace LAN_music_app_Winforms
             }
             else
             {
+                if (serwer_aktywny)
+                    broadcast("pauza", "0", "null", true);
                 vlcControl1.Pause();
+            }
+        }
+
+        private void vlc_Resume()
+        {
+            if (this.InvokeRequired)
+            {
+                Invoke((Action)delegate { vlc_Resume(); });
+            }
+            else
+            {
+                if (serwer_aktywny)
+                    broadcast("wznowienie", "0", "null", true);
+                vlcControl1.Play();
             }
         }
 
@@ -106,6 +130,8 @@ namespace LAN_music_app_Winforms
                 FileInfo plik = new System.IO.FileInfo(path); // konwersja ścieżki na format pliku
                 string nazwa = Path.GetFileName(path); // wydobycie nazwy pliku
                 text_played.Text = nazwa; // wypisanie nazwy pliku na ekranie
+                if (serwer_aktywny)
+                    broadcast("start", "0", path, true);
                 vlc_Play(plik);//vlcControl1.Play(plik); // włączenie odtwarzania pliku
             }
         }
@@ -200,26 +226,230 @@ namespace LAN_music_app_Winforms
             else
             {
                 button_pause.Text = "PAUZA";
-                vlc_Play();//vlcControl1.Play();
+                vlc_Resume();//vlcControl1.Play();
             }
         }
 
         private void button_stop_Click(object sender, EventArgs e)
         {
             vlc_Stop();//vlcControl1.Stop();
+            Clear();
         }
 
-        private void vlcControl1_Stopped(object sender, Vlc.DotNet.Core.VlcMediaPlayerStoppedEventArgs e)
+        #endregion
+
+
+        #region Obsługa połączeń
+
+        public void msg(int akcja, string readData = null)
         {
-            //MessageBox.Show("Playlista się skończyła");
-            (Application.OpenForms["Main_window"] as Main_window).Clear();
+
+            switch(akcja)
+            {
+                case 1: // NOWY client
+                    update_licznik(1);
+                    break;
+
+                case 2: // BYE
+                    update_licznik(-1);
+                    break;
+
+                default:
+                    // nic nie rob
+                    break;
+            }
         }
 
-        private void vlcControl1_EndReached(object sender, Vlc.DotNet.Core.VlcMediaPlayerEndReachedEventArgs e)
+        private void broadcast_playlist()
         {
-            //base.Invoke((Action)delegate { Play_next(); });
-            (Application.OpenForms["Main_window"] as Main_window).Play_next();
+            long czas;
+            string utwor;
+            while (true)
+            {
+                if (clientsList.Count>0)
+                {
+                    if (odtwarzany != null)
+                    {
+                        utwor = list_playlist.Items[(int)odtwarzany].ToString();
+                        czas = vlcControl1.Time;
+                        broadcast("gra", czas.ToString(), utwor, true);
+                    }
+                    else
+                        broadcast("czeka", "0", "null", true);
+
+                    Thread.Sleep(5000); // odczekaj 5  sekund
+                }
+            }
         }
 
+        public static void broadcast(string akcja, string czas, string utwor, bool flag) // funkcja wysłyania do wszsystkich podłączonych clientów
+        {
+            foreach (DictionaryEntry Item in clientsList) // dla każdego clienta na liście
+            {
+                TcpClient broadcastSocket;
+                broadcastSocket = (TcpClient)Item.Value;
+                NetworkStream broadcastStream = broadcastSocket.GetStream();
+                Byte[] broadcastBytes = null;
+
+                if (flag == true) // utwór + czas 
+                {
+                    broadcastBytes = Encoding.ASCII.GetBytes(akcja + ";" + utwor + ";" + czas);
+                }
+                else // tylko czas odtwarzanego
+                {
+                    broadcastBytes = Encoding.ASCII.GetBytes(czas);
+                }
+
+                broadcastStream.Write(broadcastBytes, 0, broadcastBytes.Length); // przekaż wiadomość
+                broadcastStream.Flush();
+            }
+        }  //end broadcast function
+
+        private void update_licznik(int val)
+        {
+            if (label_connected.InvokeRequired) // na wypadek wywołania z innego wątk
+            {
+                Action safeWrite = delegate { update_licznik(val); };
+                label_connected.Invoke(safeWrite);
+            }
+            else
+            {
+                label_connected.Text = (Convert.ToInt32(label_connected.Text) + val).ToString();
+                label_connected.Refresh();
+            }
+        }
+
+        private void przyjmowanie_polaczen() // Funkcja nasłuchująca połączeń od nowych clientów
+        {
+            int port = System.Convert.ToInt16(3333);
+            IPAddress adresIP = IPAddress.Parse("192.168.0.38"); // MÓJ adres IP
+            TcpListener serverSocket = new TcpListener(adresIP, port);
+            TcpClient clientSocket = default(TcpClient);
+            int counter; // licznik połączonych clientów
+
+            serverSocket.Start(); // otwarcie gniazda
+            //msg("Chat Server Started ....");
+
+            counter = 0;
+            while (serwer_aktywny)
+            {
+                counter += 1;
+                clientSocket = serverSocket.AcceptTcpClient(); // przyjęcie połączenia
+
+                //int bufferSize = 10025;
+                //byte[] bytesFrom = new byte[bufferSize];
+                //string dataFromClient = null;
+
+                //NetworkStream networkStream = clientSocket.GetStream();
+                //networkStream.Read(bytesFrom, 0, bufferSize);
+                //dataFromClient = Encoding.ASCII.GetString(bytesFrom);
+                //dataFromClient = dataFromClient.Substring(0, dataFromClient.IndexOf("$"));
+                // odczytanie tekstu aż do napotkania symbolu '$'
+
+                //clientsList.Add(dataFromClient, clientSocket); // dodanie clienta do listy gniazd
+                clientsList.Add(counter.ToString(), clientSocket); // dodanie clienta do listy gniazd
+
+                // wysłanie wszystkim clientom informacji o dołączeniu nowego
+                //broadcast(dataFromClient + " Joined ", dataFromClient, false);
+                msg(1);  // zwiekszenie licznika wyświetlanego
+
+                // przeniesienie clienta do nowego obiektu, w którym będzie miał swój własny wątek
+                handleClinet client = new handleClinet(this);
+                //client.startClient(clientSocket, dataFromClient, clientsList);
+                client.startClient(clientSocket, counter.ToString(), clientsList);
+
+            }
+            serverSocket.Stop(); // zakończenie działania serwera
+            serverSocket = null;
+        }
+
+
+        private void button_start_server_Click(object sender, EventArgs e)
+        {
+            if (!serwer_aktywny)
+            {
+                serwer_aktywny = true;
+                button_start_server.Text = "ZATRZYMAJ\nSERWER";
+
+                Thread ctThread = new Thread(przyjmowanie_polaczen); // start wątku nasłuchiwania dołączeń clientów
+                ctThread.Start();
+                Thread ctThread2 = new Thread(broadcast_playlist); // start wątku nasłuchiwania dołączeń clientów
+                ctThread2.Start();
+            }
+            else
+            {
+                serwer_aktywny = false;
+                button_start_server.Text = "URUCHOM\nSERWER";
+                //list_log.Items.Add("KONIEC");
+            }
+        }
+
+        #endregion
     }
+
+
+    public class handleClinet // klasa połączonego clienta
+    {
+        TcpClient clientSocket;
+        string clNo; // nazwa clienta
+        private Main_window theForm; // okno servera
+        Hashtable clientsList;
+
+        public handleClinet(Main_window theForm)
+        {
+            this.theForm = theForm; // przy deklaracji przepisanie instancji okna do zmiennej
+        }
+
+        public void startClient(TcpClient inClientSocket, string clineNo, Hashtable cList)
+        {
+            this.clientSocket = inClientSocket;
+            this.clNo = clineNo;
+            this.clientsList = cList;
+            Thread ctThread = new Thread(doChat); // wystartowanie wątku do odbierania przychodzących wiadomości
+            ctThread.Start();
+        }
+
+
+        private void doChat()
+        {
+            int requestCount;
+            int bufferSize = 10025;
+            byte[] bytesFrom = new byte[bufferSize];
+            string dataFromClient = null;
+            //Byte[] sendBytes = null;
+            //string serverResponse = null;
+            string rCount = null;
+
+            requestCount = 0;
+            while ((theForm.serwer_aktywny)) // odbieranie informacji od clientow
+            {
+                try
+                {
+                    requestCount = requestCount + 1;
+                    NetworkStream networkStream = clientSocket.GetStream();
+                    networkStream.Read(bytesFrom, 0, bufferSize);
+                    dataFromClient = Encoding.ASCII.GetString(bytesFrom);
+                    // odczytanie wiadomości aż do wystąpienia symbolu '$'
+                    dataFromClient = dataFromClient.Substring(0, dataFromClient.IndexOf("$"));
+                    // wypisanie wiadomości w log'u
+                    if (dataFromClient == "BYE")
+                        break; // zakończ wątek
+                    
+
+                    rCount = Convert.ToString(requestCount); // licznik wykonanych wiadomości
+                    //Main_window.broadcast(dataFromClient, clNo, true); // roześlij otrzymaną wiadomość wszystkim clientom
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), "Klient się brutalnie rozłączył"); // w przypadku utraty połączenia zakończ wątek
+                    break;
+                }
+            }//end while
+            clientsList.Remove(clNo);
+            theForm.msg(2); // zmniejsz licznik
+            clientSocket.Close();
+        }//end doChat
+    } //end class handleClinet
+
+
 }

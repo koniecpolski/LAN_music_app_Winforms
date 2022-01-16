@@ -1,0 +1,20 @@
+        public Main_window()
+        {
+            InitializeComponent();
+            vlcControl1.EndReached += StartNextSong;
+        }
+
+
+        private void StartNextSong(object sender, VlcMediaPlayerEndReachedEventArgs e)
+        {
+            current_song_idx++;
+            if (current_song_idx > list_playlist.Items.Count)
+                current_song_idx = 0;
+
+            var plik = this.list_playlist.Items[current_song_idx].ToString();
+            var player = (Vlc.DotNet.Forms.VlcControl)sender;
+            ThreadPool.QueueUserWorkItem( state => {
+                this.vlcControl1.Stop();
+                this.Play_next();
+            });
+        }
