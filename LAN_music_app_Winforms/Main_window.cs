@@ -27,6 +27,7 @@ namespace LAN_music_app_Winforms
         public Main_window()
         {
             InitializeComponent();
+            //vlcControl1.VlcLibDirectory = new DirectoryInfo(@"libvlc\win-x86\");
             vlcControl1.EndReached += StartNextSong; // dodanie zdarzenia na zakończenie odtwarzania utworu
         }
 

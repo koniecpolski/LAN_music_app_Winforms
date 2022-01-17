@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+
 namespace LAN_music_app_Winforms_client
 {
     partial class Main_window_client
@@ -127,7 +129,7 @@ namespace LAN_music_app_Winforms_client
             this.vlcControl1.TabIndex = 13;
             this.vlcControl1.Text = "vlcControl1";
             this.vlcControl1.Visible = false;
-            this.vlcControl1.VlcLibDirectory = ((System.IO.DirectoryInfo)(resources.GetObject("vlcControl1.VlcLibDirectory")));
+            this.vlcControl1.VlcLibDirectory = new DirectoryInfo(@"libvlc\win-x86\"); //((System.IO.DirectoryInfo)(resources.GetObject("vlcControl1.VlcLibDirectory")));
             this.vlcControl1.VlcMediaplayerOptions = null;
             // 
             // label2

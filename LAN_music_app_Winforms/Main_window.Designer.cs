@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+
 namespace LAN_music_app_Winforms
 {
     partial class Main_window
@@ -31,6 +33,8 @@ namespace LAN_music_app_Winforms
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main_window));
             this.panel_left = new System.Windows.Forms.Panel();
+            this.label6 = new System.Windows.Forms.Label();
+            this.text_IP = new System.Windows.Forms.TextBox();
             this.label_connected = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.button_start_server = new System.Windows.Forms.Button();
@@ -49,8 +53,6 @@ namespace LAN_music_app_Winforms
             this.button_set = new System.Windows.Forms.Button();
             this.textBox_czas = new System.Windows.Forms.TextBox();
             this.list_playlist = new System.Windows.Forms.ListBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.text_IP = new System.Windows.Forms.TextBox();
             this.panel_left.SuspendLayout();
             this.panel_main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.vlcControl1)).BeginInit();
@@ -69,6 +71,26 @@ namespace LAN_music_app_Winforms
             this.panel_left.Name = "panel_left";
             this.panel_left.Size = new System.Drawing.Size(139, 344);
             this.panel_left.TabIndex = 0;
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label6.AutoSize = true;
+            this.label6.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.label6.Location = new System.Drawing.Point(9, 293);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(92, 13);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Adres IP Serwera:";
+            // 
+            // text_IP
+            // 
+            this.text_IP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.text_IP.Location = new System.Drawing.Point(12, 312);
+            this.text_IP.Name = "text_IP";
+            this.text_IP.Size = new System.Drawing.Size(117, 20);
+            this.text_IP.TabIndex = 5;
+            this.text_IP.Text = "192.168.0.38";
             // 
             // label_connected
             // 
@@ -228,7 +250,7 @@ namespace LAN_music_app_Winforms
             this.vlcControl1.TabIndex = 6;
             this.vlcControl1.Text = "vlcControl1";
             this.vlcControl1.Visible = false;
-            this.vlcControl1.VlcLibDirectory = ((System.IO.DirectoryInfo)(resources.GetObject("vlcControl1.VlcLibDirectory")));
+            this.vlcControl1.VlcLibDirectory = new DirectoryInfo(@"libvlc\win-x86\");//((System.IO.DirectoryInfo)(resources.GetObject("vlcControl1.VlcLibDirectory")));
             this.vlcControl1.VlcMediaplayerOptions = null;
             // 
             // label2
@@ -273,26 +295,6 @@ namespace LAN_music_app_Winforms
             this.list_playlist.DragEnter += new System.Windows.Forms.DragEventHandler(this.list_playlist_DragEnter);
             this.list_playlist.DoubleClick += new System.EventHandler(this.list_playlist_DoubleClick);
             this.list_playlist.KeyUp += new System.Windows.Forms.KeyEventHandler(this.list_playlist_KeyUp);
-            // 
-            // label6
-            // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label6.AutoSize = true;
-            this.label6.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.label6.Location = new System.Drawing.Point(9, 293);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(92, 13);
-            this.label6.TabIndex = 6;
-            this.label6.Text = "Adres IP Serwera:";
-            // 
-            // text_IP
-            // 
-            this.text_IP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.text_IP.Location = new System.Drawing.Point(12, 312);
-            this.text_IP.Name = "text_IP";
-            this.text_IP.Size = new System.Drawing.Size(117, 20);
-            this.text_IP.TabIndex = 5;
-            this.text_IP.Text = "192.168.0.38";
             // 
             // Main_window
             // 
