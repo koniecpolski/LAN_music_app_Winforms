@@ -191,7 +191,16 @@ namespace LAN_music_app_Winforms_client
 
                 aktualizacja(part[0], part[1], Convert.ToInt64(part[2]));
             }
-            clientSocket.Close(); // jeżeli połączenie jest zakończone, zamknij gniazdo
+            try
+            {
+                clientSocket.Client.Disconnect(false);
+                clientSocket.Client.Dispose();
+                clientSocket.Close(); // jeżeli połączenie jest zakończone, zamknij gniazdo
+            }
+            catch (Exception ex)
+            {
+                // nic nie rob
+            }
         }
         private void msg() // funkcja dodawania linii log'u
         {

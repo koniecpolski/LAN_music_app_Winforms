@@ -23,6 +23,8 @@ namespace LAN_music_app_Winforms
         public int? odtwarzany = null; // nullable integer
         public bool serwer_aktywny = false;
         public static Hashtable clientsList = new Hashtable();
+        TcpListener serverSocket;
+        
 
         public Main_window()
         {
@@ -311,7 +313,8 @@ namespace LAN_music_app_Winforms
                     {
                         utwor = list_playlist.Items[(int)odtwarzany].ToString();
                         czas = vlcControl1.Time;
-                        broadcast("gra", czas.ToString(), utwor, true);
+                        if (vlcControl1.IsPlaying)
+                            broadcast("gra", czas.ToString(), utwor, true);
                     }
                     else
                         broadcast("czeka", "0", "null", true);
@@ -319,6 +322,7 @@ namespace LAN_music_app_Winforms
                     Thread.Sleep(5000); // odczekaj 5  sekund
                 }
             }
+            return;
         }
 
         public static void broadcast(string akcja, string czas, string utwor, bool flag) // funkcja wysłyania do wszsystkich podłączonych clientów
@@ -362,9 +366,21 @@ namespace LAN_music_app_Winforms
         {
             int port = System.Convert.ToInt16(3333);
             IPAddress adresIP = IPAddress.Parse(text_IP.Text); // MÓJ adres IP
-            TcpListener serverSocket = new TcpListener(adresIP, port);
-            TcpClient clientSocket = default(TcpClient);
             int counter; // licznik połączonych clientów
+            TcpClient clientSocket = default(TcpClient);
+
+            if (serverSocket == null)
+            {
+                serverSocket = new TcpListener(adresIP, port);
+            }
+            else
+            {
+                if (((IPEndPoint)serverSocket.LocalEndpoint).Address.ToString() != adresIP.ToString())
+                {
+                    serverSocket = new TcpListener(adresIP, port);
+                }
+            }
+
 
             serverSocket.Start(); // otwarcie gniazda
 
@@ -384,8 +400,17 @@ namespace LAN_music_app_Winforms
                 client.startClient(clientSocket, counter.ToString(), clientsList);
 
             }
-            serverSocket.Stop(); // zakończenie działania serwera
-            serverSocket = null;
+            try
+            {
+                serverSocket.Server.Disconnect(true);
+                serverSocket.Server.Dispose();
+                serverSocket.Stop(); // zakończenie działania serwera
+                serverSocket = null;
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.ToString(), "Coś poszło nie tak");
+            }
         }
 
         private void button_start_server_Click(object sender, EventArgs e)
@@ -393,6 +418,7 @@ namespace LAN_music_app_Winforms
             if (!serwer_aktywny)
             {
                 serwer_aktywny = true;
+                text_IP.Enabled = false;
                 button_start_server.Text = "ZATRZYMAJ\nSERWER";
 
                 Thread ctThread = new Thread(przyjmowanie_polaczen); // start wątku nasłuchiwania dołączeń clientów
@@ -403,6 +429,7 @@ namespace LAN_music_app_Winforms
             else
             {
                 serwer_aktywny = false;
+                text_IP.Enabled = true;
                 button_start_server.Text = "URUCHOM\nSERWER";
             }
         }
@@ -467,7 +494,14 @@ namespace LAN_music_app_Winforms
             }//end while
             clientsList.Remove(clNo);
             theForm.msg(2); // zmniejsz licznik
-            clientSocket.Close();
+            try
+            {
+                clientSocket.Close();
+            }
+            catch (Exception ex)
+            {
+                //nic nie rob
+            }
         }//end doChat
     } //end class handleClinet
 
