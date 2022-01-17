@@ -26,7 +26,7 @@ Data oddania projektu: 17 stycznia 2021
 5. Przed zamknięciem aplikacji sugerowane jest zakończenie połączenia przyciskiem **ROZŁĄCZ** (służący wcześniej do nawiązania połączenia)
 
 
-### Istniejące problem
+### Istniejące problemy
 
 * Aplikacje spontanicznie crash'ują w momencie rozłączenia (klient)
 * Zamknięcie aplikacji może pozostawiać działający proces w tle, który trzeba zakończyć ręcznie za pomocą narzędzia *taskmgr*
