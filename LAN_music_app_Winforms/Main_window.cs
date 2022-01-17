@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.Net;
 using System.Collections;
+using Vlc.DotNet.Core;
 
 // https://github.com/ZeBobo5/Vlc.DotNet/wiki/Getting-started
 
@@ -26,11 +27,20 @@ namespace LAN_music_app_Winforms
         public Main_window()
         {
             InitializeComponent();
+            vlcControl1.EndReached += StartNextSong; // dodanie zdarzenia na zakończenie odtwarzania utworu
         }
 
         #region Obsługa muzyki
 
-        private void vlc_Play(FileInfo plik = null)
+        private void StartNextSong(object sender, VlcMediaPlayerEndReachedEventArgs e) // AUTOMATYCZNE przełączanie się utworów
+        {
+            ThreadPool.QueueUserWorkItem(state => { 
+                this.vlcControl1.Stop(); 
+                this.Play_next();
+            });
+        }
+
+        private void vlc_Play(FileInfo plik = null) // funkcja odtwarzania nowego pliku
         {
             if (this.InvokeRequired)
             {
@@ -56,7 +66,7 @@ namespace LAN_music_app_Winforms
 
         }
 
-        private void vlc_Stop()
+        private void vlc_Stop() // funkcja zatrzymywania odtwarzania
         {
             if (this.InvokeRequired)
             {
@@ -70,7 +80,7 @@ namespace LAN_music_app_Winforms
             }
         }
 
-        private void vlc_Pause()
+        private void vlc_Pause() // funkcja pauzowania utworu
         {
             if (this.InvokeRequired)
             {
@@ -84,7 +94,7 @@ namespace LAN_music_app_Winforms
             }
         }
 
-        private void vlc_Resume()
+        private void vlc_Resume() // funkcja wznawiania odtwarzania
         {
             if (this.InvokeRequired)
             {
@@ -98,7 +108,21 @@ namespace LAN_music_app_Winforms
             }
         }
 
-        public void Play_i(int index)
+        private void Change_Time(long czas) // Funkcja zmiana czasu odtwarzanego utworu
+        {
+            if (this.InvokeRequired)
+            {
+                Invoke((Action)delegate { Change_Time(czas); });
+            }
+            else
+            {
+                if (serwer_aktywny)
+                    broadcast("zmiana", czas.ToString(), "null", true);
+                vlcControl1.Time = czas;
+            }
+        }
+
+        public void Play_i(int index) // odtwarzanie utworu o danym indeksie na playliscie
         {
             if (this.InvokeRequired)
             {
@@ -113,7 +137,11 @@ namespace LAN_music_app_Winforms
                     Play(list_playlist.Items[index].ToString()); // odtwórz plik o tym indeksie
                 }
                 else
-                    vlc_Stop();//vlcControl1.Stop();
+                {
+                    vlc_Stop();
+                    Clear();
+                }
+                    
             }
         }
 
@@ -136,7 +164,7 @@ namespace LAN_music_app_Winforms
             }
         }
 
-        public void Play_next()
+        public void Play_next() // funkcja odtwarzania kolejnego utworu na liście
         {
             if (this.InvokeRequired)
             {
@@ -154,7 +182,7 @@ namespace LAN_music_app_Winforms
             }
         }
 
-        public void Clear()
+        public void Clear() // funkcja czyszczenia wyświetlanego utworu
         {
             if (this.InvokeRequired)
                 Invoke((Action)delegate { Clear(); });
@@ -166,16 +194,18 @@ namespace LAN_music_app_Winforms
             }
         }
 
-        private void button_start_Click(object sender, EventArgs e)
+        private void button_start_Click(object sender, EventArgs e) // PRZYCISK START
         {
             if (list_playlist.Items.Count > 0)
             {
                 if (list_playlist.SelectedItem != null) // Jeżeli jakiś element jest wybrany
                     Play_i(list_playlist.SelectedIndex); // Odtwórz go
                 else
-                    Play_i(0);
+                    Play_i(0); // odtwórz pierwszy na liście
             }
         }
+
+        #region Dodawanie utworów
 
         private void list_playlist_DragDrop(object sender, DragEventArgs e)
         {
@@ -190,12 +220,6 @@ namespace LAN_music_app_Winforms
                 e.Effect = DragDropEffects.Copy;
         }
 
-        private void list_playlist_DoubleClick(object sender, EventArgs e)
-        {
-            if (list_playlist.SelectedItem != null) // Jeżeli jakiś element jest wybrany
-                Play(list_playlist.SelectedItem.ToString()); // Odtwórz go
-        }
-
         private void button_dodaj_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog(); // OKNO wybierania pliku
@@ -205,35 +229,49 @@ namespace LAN_music_app_Winforms
                 list_playlist.Items.Add(ofd.FileName);
         }
 
-        private void button_next_Click(object sender, EventArgs e)
+        #endregion
+
+        private void list_playlist_DoubleClick(object sender, EventArgs e) // wybranie elementu z listy
+        {
+            if (list_playlist.SelectedItem != null) // Jeżeli jakiś element jest wybrany
+                Play(list_playlist.SelectedItem.ToString()); // Odtwórz go
+        }
+
+        private void button_next_Click(object sender, EventArgs e) // PRZYCISK NEXT
         {
             Play_next();
         }
 
-        private void list_playlist_KeyUp(object sender, KeyEventArgs e)
+        private void list_playlist_KeyUp(object sender, KeyEventArgs e) // usuwanie elementów z listy
         {
             if (e.KeyCode == Keys.Delete)
                 list_playlist.Items.RemoveAt(list_playlist.SelectedIndex);
         }
 
-        private void button_pause_Click(object sender, EventArgs e)
+        private void button_pause_Click(object sender, EventArgs e) // PRZYCISK PAUZA
         {
             if (vlcControl1.IsPlaying)
             {
                 button_pause.Text = "WZNÓW";
-                vlc_Pause();//vlcControl1.Pause();
+                vlc_Pause();
             }
             else
             {
                 button_pause.Text = "PAUZA";
-                vlc_Resume();//vlcControl1.Play();
+                vlc_Resume();
             }
         }
 
-        private void button_stop_Click(object sender, EventArgs e)
+        private void button_stop_Click(object sender, EventArgs e) // PRZYCISK STOP
         {
-            vlc_Stop();//vlcControl1.Stop();
+            vlc_Stop();
             Clear();
+        }
+
+        private void button_set_Click(object sender, EventArgs e) // PRZYCISK USTAW
+        {
+            long czas = Convert.ToInt64(textBox_czas.Text);
+            Change_Time(czas);
         }
 
         #endregion
@@ -241,7 +279,7 @@ namespace LAN_music_app_Winforms
 
         #region Obsługa połączeń
 
-        public void msg(int akcja, string readData = null)
+        public void msg(int akcja, string readData = null) // obsługa przychodzących informacji
         {
 
             switch(akcja)
@@ -258,13 +296,13 @@ namespace LAN_music_app_Winforms
                     // nic nie rob
                     break;
             }
-        }
+        } 
 
-        private void broadcast_playlist()
+        private void broadcast_playlist() // wątek cyklicznego rozsyłania bieżącego odtwarzanego utworu
         {
             long czas;
             string utwor;
-            while (true)
+            while (serwer_aktywny)
             {
                 if (clientsList.Count>0)
                 {
@@ -322,13 +360,12 @@ namespace LAN_music_app_Winforms
         private void przyjmowanie_polaczen() // Funkcja nasłuchująca połączeń od nowych clientów
         {
             int port = System.Convert.ToInt16(3333);
-            IPAddress adresIP = IPAddress.Parse("192.168.0.38"); // MÓJ adres IP
+            IPAddress adresIP = IPAddress.Parse(text_IP.Text); // MÓJ adres IP
             TcpListener serverSocket = new TcpListener(adresIP, port);
             TcpClient clientSocket = default(TcpClient);
             int counter; // licznik połączonych clientów
 
             serverSocket.Start(); // otwarcie gniazda
-            //msg("Chat Server Started ....");
 
             counter = 0;
             while (serwer_aktywny)
@@ -336,33 +373,19 @@ namespace LAN_music_app_Winforms
                 counter += 1;
                 clientSocket = serverSocket.AcceptTcpClient(); // przyjęcie połączenia
 
-                //int bufferSize = 10025;
-                //byte[] bytesFrom = new byte[bufferSize];
-                //string dataFromClient = null;
-
-                //NetworkStream networkStream = clientSocket.GetStream();
-                //networkStream.Read(bytesFrom, 0, bufferSize);
-                //dataFromClient = Encoding.ASCII.GetString(bytesFrom);
-                //dataFromClient = dataFromClient.Substring(0, dataFromClient.IndexOf("$"));
-                // odczytanie tekstu aż do napotkania symbolu '$'
-
-                //clientsList.Add(dataFromClient, clientSocket); // dodanie clienta do listy gniazd
                 clientsList.Add(counter.ToString(), clientSocket); // dodanie clienta do listy gniazd
 
-                // wysłanie wszystkim clientom informacji o dołączeniu nowego
-                //broadcast(dataFromClient + " Joined ", dataFromClient, false);
+
                 msg(1);  // zwiekszenie licznika wyświetlanego
 
                 // przeniesienie clienta do nowego obiektu, w którym będzie miał swój własny wątek
                 handleClinet client = new handleClinet(this);
-                //client.startClient(clientSocket, dataFromClient, clientsList);
                 client.startClient(clientSocket, counter.ToString(), clientsList);
 
             }
             serverSocket.Stop(); // zakończenie działania serwera
             serverSocket = null;
         }
-
 
         private void button_start_server_Click(object sender, EventArgs e)
         {
@@ -380,7 +403,6 @@ namespace LAN_music_app_Winforms
             {
                 serwer_aktywny = false;
                 button_start_server.Text = "URUCHOM\nSERWER";
-                //list_log.Items.Add("KONIEC");
             }
         }
 
@@ -416,8 +438,6 @@ namespace LAN_music_app_Winforms
             int bufferSize = 10025;
             byte[] bytesFrom = new byte[bufferSize];
             string dataFromClient = null;
-            //Byte[] sendBytes = null;
-            //string serverResponse = null;
             string rCount = null;
 
             requestCount = 0;
@@ -437,7 +457,6 @@ namespace LAN_music_app_Winforms
                     
 
                     rCount = Convert.ToString(requestCount); // licznik wykonanych wiadomości
-                    //Main_window.broadcast(dataFromClient, clNo, true); // roześlij otrzymaną wiadomość wszystkim clientom
                 }
                 catch (Exception ex)
                 {

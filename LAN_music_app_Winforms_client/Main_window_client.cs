@@ -129,7 +129,7 @@ namespace LAN_music_app_Winforms_client
         {
             switch(akcja)
             {
-                case "gra":
+                case "gra": // synchronizacja z odtwarzaniem
 
                     if (plik != odtwarzany)
                     {
@@ -144,22 +144,22 @@ namespace LAN_music_app_Winforms_client
                     Change_Time(czas);
                     break;
 
-                case "czeka":
+                case "czeka": // bezczynność - nic nie jest grane
                     break;
 
-                case "pauza":
+                case "pauza": // pauzowanie utworu
                     vlc_Pause();
                     break;
 
-                case "wznowienie":
+                case "wznowienie": // odpauzowanie utworu
                     vlc_Resume();
                     break;
 
-                case "stop":
+                case "stop": // zatrzymanie odtwarzania
                     vlc_Stop();
                     break;
 
-                case "start":
+                case "start": // rozpoczęcie grania nowego utworu
                     Play(plik,czas, false);
                     break;
 
@@ -225,11 +225,6 @@ namespace LAN_music_app_Winforms_client
                 clientSocket = new TcpClient();
                 clientSocket.Connect(adresIP, port);
                 serverStream = clientSocket.GetStream();
-
-                // wysłanie do servera nazwy użytkownika Chat'u
-                //byte[] outStream = Encoding.ASCII.GetBytes("HI" + "$");
-                //serverStream.Write(outStream, 0, outStream.Length);
-                //serverStream.Flush();
 
                 // zmiana opisu przycisku
                 polaczenia_aktywne = true;

@@ -49,6 +49,8 @@ namespace LAN_music_app_Winforms
             this.button_set = new System.Windows.Forms.Button();
             this.textBox_czas = new System.Windows.Forms.TextBox();
             this.list_playlist = new System.Windows.Forms.ListBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.text_IP = new System.Windows.Forms.TextBox();
             this.panel_left.SuspendLayout();
             this.panel_main.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.vlcControl1)).BeginInit();
@@ -57,6 +59,8 @@ namespace LAN_music_app_Winforms
             // panel_left
             // 
             this.panel_left.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.panel_left.Controls.Add(this.label6);
+            this.panel_left.Controls.Add(this.text_IP);
             this.panel_left.Controls.Add(this.label_connected);
             this.panel_left.Controls.Add(this.label1);
             this.panel_left.Controls.Add(this.button_start_server);
@@ -91,9 +95,9 @@ namespace LAN_music_app_Winforms
             // 
             // button_start_server
             // 
-            this.button_start_server.Location = new System.Drawing.Point(32, 25);
+            this.button_start_server.Location = new System.Drawing.Point(21, 25);
             this.button_start_server.Name = "button_start_server";
-            this.button_start_server.Size = new System.Drawing.Size(75, 34);
+            this.button_start_server.Size = new System.Drawing.Size(100, 34);
             this.button_start_server.TabIndex = 0;
             this.button_start_server.Text = "URUCHOM\r\nSERWER";
             this.button_start_server.UseVisualStyleBackColor = true;
@@ -232,9 +236,9 @@ namespace LAN_music_app_Winforms
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(35, 111);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(101, 13);
+            this.label2.Size = new System.Drawing.Size(125, 13);
             this.label2.TabIndex = 5;
-            this.label2.Text = "Odtwarzana minuta:";
+            this.label2.Text = "Odtwarzana milisekunda:";
             // 
             // button_set
             // 
@@ -244,6 +248,7 @@ namespace LAN_music_app_Winforms
             this.button_set.TabIndex = 4;
             this.button_set.Text = "USTAW";
             this.button_set.UseVisualStyleBackColor = true;
+            this.button_set.Click += new System.EventHandler(this.button_set_Click);
             // 
             // textBox_czas
             // 
@@ -251,6 +256,7 @@ namespace LAN_music_app_Winforms
             this.textBox_czas.Name = "textBox_czas";
             this.textBox_czas.Size = new System.Drawing.Size(100, 20);
             this.textBox_czas.TabIndex = 3;
+            this.textBox_czas.Text = "0";
             // 
             // list_playlist
             // 
@@ -267,6 +273,26 @@ namespace LAN_music_app_Winforms
             this.list_playlist.DragEnter += new System.Windows.Forms.DragEventHandler(this.list_playlist_DragEnter);
             this.list_playlist.DoubleClick += new System.EventHandler(this.list_playlist_DoubleClick);
             this.list_playlist.KeyUp += new System.Windows.Forms.KeyEventHandler(this.list_playlist_KeyUp);
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label6.AutoSize = true;
+            this.label6.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.label6.Location = new System.Drawing.Point(9, 293);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(92, 13);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Adres IP Serwera:";
+            // 
+            // text_IP
+            // 
+            this.text_IP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.text_IP.Location = new System.Drawing.Point(12, 312);
+            this.text_IP.Name = "text_IP";
+            this.text_IP.Size = new System.Drawing.Size(117, 20);
+            this.text_IP.TabIndex = 5;
+            this.text_IP.Text = "192.168.0.38";
             // 
             // Main_window
             // 
@@ -296,7 +322,6 @@ namespace LAN_music_app_Winforms
         private System.Windows.Forms.Button button_next;
         private System.Windows.Forms.Button button_start;
         private System.Windows.Forms.Button button_start_server;
-        private System.Windows.Forms.ListBox list_playlist;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button_set;
         private System.Windows.Forms.TextBox textBox_czas;
@@ -308,6 +333,9 @@ namespace LAN_music_app_Winforms
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button button_stop;
         private System.Windows.Forms.Button button_pause;
+        private System.Windows.Forms.ListBox list_playlist;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox text_IP;
     }
 }
 
